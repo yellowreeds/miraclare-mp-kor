@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:goodeeps2/login_page.dart';
+import 'package:goodeeps2/screens/login_page.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 

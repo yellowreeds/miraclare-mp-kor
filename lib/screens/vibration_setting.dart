@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:goodeeps2/vibration_pattern_screen.dart';
 import 'dart:convert';
-
+import 'package:goodeeps2/utils/divider_shape.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -145,7 +145,7 @@ class _VibrationSettingState extends State<VibrationSetting> {
                       interval: 1,
                       showDividers: true,
                       stepSize: 1.0,
-                      dividerShape: _DividerShape(),
+                      dividerShape: DividerShape(),
                       onChanged: (value) {
                         setState(() {
                           vibIntensity = value;
@@ -353,25 +353,5 @@ class _VibrationSettingState extends State<VibrationSetting> {
         ),
       ),
     );
-  }
-}
-
-class _DividerShape extends SfDividerShape {
-  @override
-  void paint(PaintingContext context, Offset center, Offset? thumbCenter,
-      Offset? startThumbCenter, Offset? endThumbCenter,
-      {required RenderBox parentBox,
-      required SfSliderThemeData themeData,
-      SfRangeValues? currentValues,
-      dynamic currentValue,
-      required Paint? paint,
-      required Animation<double> enableAnimation,
-      required TextDirection textDirection}) {
-    context.canvas.drawRect(
-        Rect.fromCenter(center: center, width: 1, height: 15),
-        Paint()
-          ..isAntiAlias = true
-          ..style = PaintingStyle.fill
-          ..color = Colors.black);
   }
 }

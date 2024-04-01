@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:goodeeps2/personal_information_page.dart';
 import 'package:kpostal/kpostal.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:goodeeps2/widgets/dialog.dart';
+import 'package:goodeeps2/services/registration.dart';
 
 class MemberRegistration extends StatefulWidget {
   const MemberRegistration({super.key});
@@ -46,7 +43,7 @@ class _MemberRegistrationState extends State<MemberRegistration> {
   DateTime selectedDate = DateTime.now();
   Timer? countdownTimer;
   late int remainingTime;
-  late String verificationCode;
+  late String? verificationCode;
   late List<String>? username = [];
   late List<String>? email = [];
   bool isLoadingID = false;
@@ -73,8 +70,10 @@ class _MemberRegistrationState extends State<MemberRegistration> {
       }
       prefs = await SharedPreferences.getInstance();
       countryCodeController.text = "+82";
-      checkIdExist(context);
-      checkEmailExist(context);
+      username = await RegistrationServices.checkIdExist(
+          context, screenWidth, screenHeight);
+      email = await RegistrationServices.checkEmailExist(
+          context, screenWidth, screenHeight);
     });
   }
 
@@ -146,137 +145,6 @@ class _MemberRegistrationState extends State<MemberRegistration> {
     int minutes = seconds ~/ 60;
     int remainingSeconds = seconds % 60;
     return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
-  }
-
-  Future<void> register(BuildContext context) async {
-    try {
-      String password = BCrypt.hashpw(
-        passwordController.text,
-        BCrypt.gensalt(),
-      );
-
-      final String apiUrl = 'http://3.21.156.190:3000/api/customers/register';
-      if (phoneNumberController.text.isNotEmpty &&
-          phoneNumberController.text[0] == '0') {
-        phoneNumberController.text = phoneNumberController.text.substring(1);
-      }
-      final String fullPhoneNumber =
-          countryCodeController.text + "-" + phoneNumberController.text;
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'cust_username': idController.text,
-          'cust_password': password,
-          'cust_name': nameController.text,
-          'cust_dob': dobController.text,
-          'cust_gender': genderValue.toString(),
-          'cust_email': emailController.text,
-          'cust_phone_num': fullPhoneNumber,
-          'cust_address': addressController.text,
-          'cust_detail_address': detailAddressController.text,
-          'cust_join_date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-          'prod_registration_key': productKeyController.text,
-        },
-      );
-
-      if (response.statusCode == 201) {
-        final jsonResponse = json.decode(response.body);
-        showSuccessDialog(context, jsonResponse['cust_id']);
-        prefs.setString('custName', nameController.text);
-        prefs.setString('custUsername', idController.text);
-      } else if (response.statusCode == 409) {
-        showFailedDialog(context, '이미 사용중인 아이디입니다.');
-        print("Error : ${response.body}");
-      } else {
-        showFailedDialog(context, 'Internal Server Error');
-      }
-    } catch (error) {
-      print('Error: $error');
-      showFailedDialog(context, '서버에 연결할 수 없습니다. 네트워크 연결을 확인하십시오.');
-    }
-  }
-
-  Future<void> checkIdExist(BuildContext context) async {
-    isLoadingID = true;
-    final String apiUrl = 'http://3.21.156.190:3000/api/customers/checkIdExist';
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body) as List<dynamic>;
-
-        username = jsonResponse
-            .map((data) => data['cust_username'].toString())
-            .toList();
-        setState(() {
-          isLoadingID = false;
-        });
-      } else {
-        isLoadingID = false;
-        print("Error: ${response.body}");
-        showFailedDialog(context, 'Error fetching data from the server');
-      }
-    } catch (error) {
-      isLoadingID = false;
-      print('Error: $error');
-      showFailedDialog(
-          context, 'Network error: Unable to connect to the server');
-    }
-  }
-
-  Future<void> checkEmailExist(BuildContext context) async {
-    isLoadingEmail = true;
-    final String apiUrl =
-        'http://3.21.156.190:3000/api/customers/checkEmailExist';
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body) as List<dynamic>;
-
-        email =
-            jsonResponse.map((data) => data['cust_email'].toString()).toList();
-        setState(() {
-          isLoadingEmail = false;
-        });
-      } else {
-        setState(() {
-          isLoadingEmail = false;
-        });
-        print("Error: ${response.body}");
-        showFailedDialog(context, 'Error fetching data from the server');
-      }
-    } catch (error) {
-      setState(() {
-        isLoadingEmail = false;
-      });
-      print('Error: $error');
-      showFailedDialog(
-          context, 'Network error: Unable to connect to the server');
-    }
-  }
-
-  Future<void> getVerificationCode(BuildContext context) async {
-    try {
-      final String apiUrl =
-          'http://3.21.156.190:3000/api/customers/requestVerificationNumber';
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {'cust_email': emailController.text.toString()},
-      );
-
-      if (response.statusCode != 500) {
-        final jsonResponse = json.decode(response.body);
-        verificationCode = jsonResponse.toString();
-      } else {
-        print("Error : ${response.body}");
-      }
-    } catch (error) {
-      print('Error: $error');
-      showFailedDialog(context, '서버에 연결할 수 없습니다. 네트워크 연결을 확인하십시오.');
-    }
   }
 
   @override
@@ -1187,7 +1055,7 @@ class _MemberRegistrationState extends State<MemberRegistration> {
                         alignment: Alignment.centerLeft,
                         child: SizedBox(
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (emailController.text.isEmpty) {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
@@ -1203,11 +1071,17 @@ class _MemberRegistrationState extends State<MemberRegistration> {
                               } else {
                                 if (!email!.contains(
                                     emailController.text.toString())) {
-                                  getVerificationCode(context);
+                                  verificationCode = await RegistrationServices
+                                      .getVerificationCode(
+                                          context,
+                                          emailController.text,
+                                          screenWidth,
+                                          screenHeight);
                                   remainingTime = 180;
                                   startCountdown();
                                 } else {
-                                  showFailedDialog(context, "이미 사용중인 이메일입니다.");
+                                  showFailedDialog(context, "이미 사용중인 이메일입니다.",
+                                      screenWidth, screenHeight);
                                 }
                               }
                             },
@@ -1408,10 +1282,26 @@ class _MemberRegistrationState extends State<MemberRegistration> {
                                 detailAddressController.text.isNotEmpty &&
                                 productKeyController.text.isNotEmpty &&
                                 genderValue != 2) {
-                              register(context);
+                              RegistrationServices.register(
+                                  context,
+                                  idController.text,
+                                  passwordController.text,
+                                  nameController.text,
+                                  dobController.text,
+                                  genderValue,
+                                  emailController.text,
+                                  addressController.text,
+                                  detailAddressController.text,
+                                  productKeyController.text,
+                                  phoneNumberController.text,
+                                  countryCodeController.text,
+                                  prefs,
+                                  screenWidth,
+                                  screenHeight);
                             } else if (email!
                                 .contains(emailController.text.toString())) {
-                              showFailedDialog(context, "이미 사용중인 이메일 입니다.");
+                              showFailedDialog(context, "이미 사용중인 이메일 입니다.",
+                                  screenWidth, screenHeight);
                             } else {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
@@ -1450,126 +1340,6 @@ class _MemberRegistrationState extends State<MemberRegistration> {
           ),
         ],
       ),
-    );
-  }
-
-  Future<void> showFailedDialog(BuildContext context, String message) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async => false, // Prevent dialog from being dismissed
-          child: AlertDialog(
-            contentPadding: EdgeInsets.zero,
-            content: Container(
-              width: screenWidth,
-              padding: EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 5),
-              color: Colors.black,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Center(
-                    child: Text(
-                      textScaleFactor: 0.8,
-                      message,
-                      style: TextStyle(
-                        fontFamily: 'Pretendart',
-                        color: Colors.white,
-                        fontSize: screenHeight * 0.02,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.05,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                    ),
-                    child: Text(
-                      textScaleFactor: 0.8,
-                      '확인',
-                      style: TextStyle(
-                        fontSize: screenHeight * 0.02,
-                        fontFamily: 'Pretendart',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> showSuccessDialog(BuildContext context, String custID) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async => false, // Prevent dialog from being dismissed
-          child: AlertDialog(
-            contentPadding: EdgeInsets.zero,
-            content: Container(
-              width: screenWidth,
-              padding: EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 5),
-              color: Colors.black,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Center(
-                    child: Text(
-                      textScaleFactor: 0.8,
-                      '회원가입이 완료되었습니다.\n설문조사 항목으로 이동됩니다.',
-                      style: TextStyle(
-                        fontFamily: 'Pretendart',
-                        color: Colors.white,
-                        fontSize: screenHeight * 0.02,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.05,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PersonalInformation(
-                            custID: custID,
-                          ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                    ),
-                    child: Text(
-                      textScaleFactor: 0.8,
-                      '확인',
-                      style: TextStyle(
-                        fontSize: screenHeight * 0.02,
-                        fontFamily: 'Pretendart',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

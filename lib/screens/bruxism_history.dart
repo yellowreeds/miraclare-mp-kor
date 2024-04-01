@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:goodeeps2/utils/chart_data.dart';
+import 'package:goodeeps2/services/bruxism.dart';
 
 class BruxismHistory extends StatefulWidget {
   const BruxismHistory({super.key});
@@ -32,10 +32,6 @@ class _BruxismHistoryState extends State<BruxismHistory> {
   @override
   void initState() {
     super.initState();
-    // initiate screen height and width
-    // initiate shared preferences
-    // assign user's username
-    // get user's sleep data
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       MediaQueryData mediaQueryData = MediaQuery.of(context);
       if (mediaQueryData.orientation == Orientation.portrait) {
@@ -51,8 +47,69 @@ class _BruxismHistoryState extends State<BruxismHistory> {
       }
       prefs = await SharedPreferences.getInstance();
       custUsername = await prefs.getString('custUsername');
-      getSleepDataResult(context, custUsername!);
+      await loadSleepData(custUsername!);
     });
+  }
+
+  Future<void> loadSleepData(
+    String custUsername, {
+    String? fromDate,
+    String? toDate,
+  }) async {
+    String toDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    final jsonResponse = await Bruxism().getSleepDataResult(
+        context, custUsername,
+        fromDate: fromDate, toDate: toDate);
+
+    if (jsonResponse != null) {
+      setState(() {
+        latestBrEpisode = jsonResponse['latest_br_episode'].toString();
+        highestBrMax = jsonResponse['highest_br_max'].toString();
+        latestData = jsonResponse['latest_data'].toString();
+        weeklyBrAverage = jsonResponse['average_br_episode'].toString();
+        sleepStart = jsonResponse['sleep_start'] == null
+            ? "1970-12-13T18:26:38.000Z"
+            : jsonResponse['sleep_start'].toString();
+        sleepStop = jsonResponse['sleep_stop'] == null
+            ? "1970-12-13T18:26:38.000Z"
+            : jsonResponse['sleep_stop'].toString();
+        sleepDuration = jsonResponse['sleep_duration'] == null
+            ? "-99"
+            : jsonResponse['sleep_duration']
+                .toString(); // -99 means no sleep duration
+        final brDataMap = Map<String, int>.from(jsonResponse['br_data']);
+
+        final toDateDateTime = DateFormat('yyyy-MM-dd').parse(toDate);
+
+        for (int i = 0; i < 7; i++) {
+          final formattedDate = DateFormat('yy.MM.dd')
+              .format(toDateDateTime.subtract(Duration(days: i)));
+          if (!brDataMap.containsKey(formattedDate)) {
+            brDataMap[formattedDate] = -99; // -99 means no sleep bruxism
+          }
+        }
+
+        brData = brDataMap;
+        List<MapEntry<String, int>> brDataList = brData.entries.toList();
+        brDataList.sort((a, b) => a.key.compareTo(b.key));
+        brData = Map.fromEntries(brDataList);
+
+        if (brData.length > 7) {
+          List<String> keysToRemove =
+              brData.keys.take(brData.length - 7).toList();
+          keysToRemove.forEach((key) {
+            brData.remove(key);
+          });
+        }
+
+        brData.forEach((date, brEpisode) {
+          print('Date: $date, Br Episode: $brEpisode');
+        });
+      });
+    } else {
+      print('Failed to load user data');
+    }
   }
 
   DateTime? parseDate(String text) {
@@ -98,7 +155,6 @@ class _BruxismHistoryState extends State<BruxismHistory> {
     }
   }
 
-  // build bar chart using SfCartesianChart
   SfCartesianChart _buildBarChart(Map<String, dynamic> brData) {
     List<ChartData> chartData = [];
 
@@ -129,9 +185,6 @@ class _BruxismHistoryState extends State<BruxismHistory> {
     });
 
     return SfCartesianChart(
-      // in the graph:
-      // label shows 0 = 0 bruxism
-      // no label = no bruxism
       primaryXAxis: CategoryAxis(
         majorGridLines: MajorGridLines(width: 0),
         minorGridLines: MinorGridLines(width: 0),
@@ -163,99 +216,6 @@ class _BruxismHistoryState extends State<BruxismHistory> {
         )
       ],
     );
-  }
-
-  // get user's sleep data
-  Future<void> getSleepDataResult(
-    BuildContext context,
-    String custUsername, {
-    String? fromDate,
-    String? toDate,
-  }) async {
-    // if no date is specified, get the last 7 days of data from current time
-    if (fromDate == null || toDate == null) {
-      final currentDate = DateTime.now();
-      final defaultToDate = currentDate.subtract(Duration(days: 6));
-      fromDate = DateFormat('yyyy-MM-dd').format(defaultToDate);
-      toDate = DateFormat('yyyy-MM-dd').format(currentDate);
-    }
-
-    try {
-      final apiUrl = 'http://3.21.156.190:3000/api/customers/sleepDataResult';
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'cust_username': custUsername,
-          'fromDate': fromDate,
-          'toDate': toDate,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-
-        setState(() {
-          latestBrEpisode = jsonResponse['latest_br_episode'].toString();
-          highestBrMax = jsonResponse['highest_br_max'].toString();
-          latestData = jsonResponse['latest_data'].toString();
-          weeklyBrAverage = jsonResponse['average_br_episode'].toString();
-          sleepStart = jsonResponse['sleep_start'] == null
-              ? "1970-12-13T18:26:38.000Z"
-              : jsonResponse['sleep_start'].toString();
-          sleepStop = jsonResponse['sleep_stop'] == null
-              ? "1970-12-13T18:26:38.000Z"
-              : jsonResponse['sleep_stop'].toString();
-          sleepDuration = jsonResponse['sleep_duration'] == null
-              ? "-99"
-              : jsonResponse['sleep_duration']
-                  .toString(); // -99 means no sleep duration
-          final brDataMap = Map<String, int>.from(jsonResponse['br_data']);
-
-          final toDateDateTime = DateFormat('yyyy-MM-dd').parse(toDate!);
-
-          for (int i = 0; i < 7; i++) {
-            final formattedDate = DateFormat('yy.MM.dd')
-                .format(toDateDateTime.subtract(Duration(days: i)));
-            if (!brDataMap.containsKey(formattedDate)) {
-              brDataMap[formattedDate] = -99; // -99 means no sleep bruxism
-            }
-          }
-
-          // sort and format the data to show only last 7 days in ascending order
-          brData = brDataMap;
-          List<MapEntry<String, int>> brDataList = brData.entries.toList();
-          brDataList.sort((a, b) => a.key.compareTo(b.key));
-          brData = Map.fromEntries(brDataList);
-
-          if (brData.length > 7) {
-            List<String> keysToRemove =
-                brData.keys.take(brData.length - 7).toList();
-            keysToRemove.forEach((key) {
-              brData.remove(key);
-            });
-          }
-
-          brData.forEach((date, brEpisode) {
-            print('Date: $date, Br Episode: $brEpisode');
-          });
-        });
-        isLoading = false;
-      } else {
-        if (response.statusCode == 400) {
-          // Handle 400 Bad Request
-          print(response.body);
-        } else if (response.statusCode == 500) {
-          // Handle 500 Internal Server Error
-          print(response.body);
-        } else {
-          // Handle other status codes as needed
-          print(response.body);
-        }
-      }
-    } catch (error) {
-      // Handle any network or other errors here
-      print('Error: $error');
-    }
   }
 
   @override
@@ -654,7 +614,7 @@ class _BruxismHistoryState extends State<BruxismHistory> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(50),
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               DateTime? parsedDate =
                                   parseDate(dateController.text);
                               final currentDate = DateTime.now();
@@ -671,19 +631,14 @@ class _BruxismHistoryState extends State<BruxismHistory> {
                                   ),
                                 );
                               } else {
-                                setState(() {
-                                  isLoading = true;
-                                  DateTime? parsedDate =
-                                      parseDate(dateController.text);
-                                  getSleepDataResult(
-                                    context,
-                                    custUsername!,
+                                DateTime? parsedDate =
+                                    parseDate(dateController.text);
+                                await loadSleepData(custUsername!,
                                     toDate: DateFormat('yyyy-MM-dd')
                                         .format(parsedDate!),
                                     fromDate: DateFormat('yyyy-MM-dd').format(
-                                        parsedDate.subtract(Duration(days: 6))),
-                                  );
-                                });
+                                        parsedDate
+                                            .subtract(Duration(days: 6))));
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -724,11 +679,4 @@ class _BruxismHistoryState extends State<BruxismHistory> {
       ),
     );
   }
-}
-
-class ChartData {
-  final String date;
-  final int? brEpisode; // Use int? to allow null values
-
-  ChartData(this.date, this.brEpisode);
 }

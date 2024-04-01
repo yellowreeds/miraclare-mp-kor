@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:goodeeps2/account_edit_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:goodeeps2/services/account_edit.dart';
 
 class AccountConfirmation extends StatefulWidget {
   const AccountConfirmation({super.key});
@@ -41,52 +40,6 @@ class _AccountConfirmationState extends State<AccountConfirmation> {
       prefs = await SharedPreferences.getInstance();
       username = await prefs!.getString('custUsername') ?? "";
     });
-  }
-
-  // check is password correct in the server
-  Future<void> checkPassword(BuildContext context) async {
-    try {
-      final String apiUrl =
-          'http://3.21.156.190:3000/api/customers/checkPassword';
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'username': username,
-          'password': passwordController.text,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        isLoading = false;
-        passwordController.text = "";
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AccountEdit(),
-            ));
-      } else if (response.statusCode == 401) {
-        print("response: ${response.body}");
-
-        showSuccessDialog(context, '비밀번호가 일치하지 않습니다.');
-        setState(() {
-          isLoading = false;
-        });
-      } else {
-        print("response: ${response.body}");
-
-        showSuccessDialog(context, '내부 서버 오류입니다. 다시 시도해 주십시오.');
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (error) {
-      // Handle the error here
-      print('Error: $error');
-      showSuccessDialog(context, '서버에 연결할 수 없습니다. 네트워크 연결을 확인하십시오.');
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
 
   @override
@@ -194,7 +147,8 @@ class _AccountConfirmationState extends State<AccountConfirmation> {
                     setState(() {
                       isLoading = true;
                     });
-                    checkPassword(context);
+                    AccountEditService.checkPassword(context, username,
+                        passwordController.text, screenWidth, screenHeight);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,

@@ -1,15 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_ip_address/get_ip_address.dart';
 import 'package:goodeeps2/change_password_page.dart';
 import 'package:goodeeps2/find_id_page.dart';
-import 'package:goodeeps2/main_page.dart';
 import 'package:goodeeps2/terms_agreement_page.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
+import 'package:goodeeps2/services/login.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -60,58 +56,9 @@ class _LoginPageState extends State<LoginPage> {
           rememberLogin = true;
           idController.text = savedUsername;
           passwordController.text = savedPassword;
-          print("password: ${passwordController.text}");
         }
       }
     });
-  }
-
-  Future<void> login(BuildContext context) async {
-    try {
-      var ipAddress = IpAddress(type: RequestType.json);
-      dynamic data = await ipAddress.getIpAddress();
-      final String apiUrl = 'http://3.21.156.190:3000/api/customers/login';
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'username': idController.text,
-          'password': passwordController.text,
-          'ipAddress': data['ip'],
-        },
-      );
-
-      if (response.statusCode == 200) {
-        isLoading = false;
-        final jsonResponse = json.decode(response.body);
-        prefs.setString('custUsername', idController.text);
-        prefs.setString('custName', jsonResponse['message']);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainPage(
-              connectedDevice: null,
-            ),
-          ),
-        );
-      } else if (response.statusCode == 401) {
-        _showLoginDialog(context, '아이디 또는 비밀번호가 일치하지 않습니다.');
-        setState(() {
-          isLoading = false;
-        });
-      } else {
-        _showLoginDialog(context, '내부 서버 오류입니다.\n다시 시도해 주십시오.');
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (error) {
-      // Handle the error here
-      print('Error: $error');
-      _showLoginDialog(context, '서버에 연결할 수 없습니다. 네트워크 연결을 확인하십시오.');
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
 
   @override
@@ -275,17 +222,31 @@ class _LoginPageState extends State<LoginPage> {
                               borderRadius: BorderRadius.circular(4.0),
                             ),
                             child: ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 if (rememberLogin) {
                                   prefs.setString('savedUsername',
                                       idController.text.toString());
                                   prefs.setString('savedPassword',
                                       passwordController.text.toString());
                                 }
-                                login(context);
                                 setState(() {
                                   isLoading = true;
                                 });
+                                try {
+                                  await LoginServices.login(
+                                      context,
+                                      idController.text,
+                                      passwordController.text,
+                                      prefs,
+                                      screenHeight,
+                                      screenWidth);
+                                } catch (error) {
+                                  print("Error: $error");
+                                } finally {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
@@ -442,54 +403,6 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> _showLoginDialog(BuildContext context, String text) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          content: Container(
-            padding: EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 5),
-            color: Colors.black,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Center(
-                  child: Text(
-                    textScaleFactor: 0.85,
-                    text,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: screenHeight * 0.02,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: screenHeight * 0.05,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                  ),
-                  child: Text(
-                    textScaleFactor: 0.85,
-                    '확인',
-                    style: TextStyle(fontSize: screenHeight * 0.02),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

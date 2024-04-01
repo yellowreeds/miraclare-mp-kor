@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:http/http.dart' as http;
+import 'package:goodeeps2/services/find_id.dart';
 
 class FindId extends StatefulWidget {
   const FindId({super.key});
@@ -48,33 +46,22 @@ class _FindIdState extends State<FindId> {
     });
   }
 
-  Future<void> searchID(BuildContext context) async {
-    try {
-      final String apiUrl = 'http://3.21.156.190:3000/api/customers/searchID';
-      if (phoneNumberController.text.isNotEmpty &&
-          phoneNumberController.text[0] == '0') {
-        phoneNumberController.text = phoneNumberController.text.substring(1);
-      }
-      final String fullPhoneNumber =
-          countryCodeController.text + "-" + phoneNumberController.text;
+  Future<void> showID() async {
+    final userData = await FindingID().searchID(
+        context,
+        phoneNumberController.text,
+        countryCodeController.text,
+        emailController.text,
+        screenWidth,
+        screenHeight);
 
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'cust_phone_num': fullPhoneNumber,
-          'cust_email': emailController.text,
-        },
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          isLoading = false;
-        });
-        final jsonResponse = json.decode(response.body);
+    if (userData != null) {
+      setState(() {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               textScaleFactor: 0.8,
-              "당신의 아이디는: ${jsonResponse['message']}",
+              "당신의 아이디는: ${userData}",
               style: TextStyle(
                   fontFamily: 'Pretendart', fontSize: screenHeight * 0.020),
             ),
@@ -83,23 +70,9 @@ class _FindIdState extends State<FindId> {
         phoneNumberController.text = "";
         emailController.text = "";
         countryCodeController.text = "+";
-      } else if (response.statusCode == 404) {
-        _showLoginDialog(context, '이메일 또는 전화번호가 일치하지 않습니다.');
-        setState(() {
-          isLoading = false;
-        });
-      } else {
-        _showLoginDialog(context, '내부 서버 오류입니다. 다시 시도해 주십시오.');
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (error) {
-      print('Error: $error');
-      _showLoginDialog(context, '서버에 연결할 수 없습니다. 네트워크 연결을\n확인하십시오.');
-      setState(() {
-        isLoading = false;
       });
+    } else {
+      print('Failed to load user data');
     }
   }
 
@@ -281,11 +254,8 @@ class _FindIdState extends State<FindId> {
                           borderRadius: BorderRadius.circular(4.0),
                         ),
                         child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            searchID(context);
+                          onPressed: () async {
+                            await showID();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,

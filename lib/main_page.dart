@@ -4,12 +4,12 @@ import 'dart:typed_data';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:goodeeps2/bruxism_history.dart';
+import 'package:goodeeps2/screens/bruxism_history.dart';
 import 'package:goodeeps2/update_screen.dart';
 import 'package:http/http.dart' as http;
-import 'package:goodeeps2/account_confirmation_page.dart';
-import 'package:goodeeps2/bluetooth_connection_page.dart';
-import 'package:goodeeps2/login_page.dart';
+import 'package:goodeeps2/screens/account_confirmation_page.dart';
+import 'package:goodeeps2/screens/bluetooth_connection_page.dart';
+import 'package:goodeeps2/screens/login_page.dart';
 import 'dart:convert';
 import 'dart:collection';
 import 'package:get_ip_address/get_ip_address.dart';
@@ -22,6 +22,7 @@ import 'package:bluetooth_enable_fork/bluetooth_enable_fork.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
+import 'package:goodeeps2/utils/divider_shape.dart';
 
 class MainPage extends StatefulWidget {
   final BluetoothDevice? connectedDevice;
@@ -1211,7 +1212,7 @@ class _MainPageState extends State<MainPage> {
                                                           Colors.transparent,
                                                       showDividers: true,
                                                       dividerShape:
-                                                          _DividerShape(),
+                                                          DividerShape(),
                                                       thumbShape:
                                                           _SfThumbShape(),
                                                       showLabels: true,
@@ -3905,25 +3906,5 @@ class _SfThumbShape extends SfThumbShape {
     path.lineTo(center.dx - 10, center.dy - 15);
     path.close();
     context.canvas.drawPath(path, Paint()..color = Color(0xFFFFC71B));
-  }
-}
-
-class _DividerShape extends SfDividerShape {
-  @override
-  void paint(PaintingContext context, Offset center, Offset? thumbCenter,
-      Offset? startThumbCenter, Offset? endThumbCenter,
-      {required RenderBox parentBox,
-      required SfSliderThemeData themeData,
-      SfRangeValues? currentValues,
-      dynamic currentValue,
-      required Paint? paint,
-      required Animation<double> enableAnimation,
-      required TextDirection textDirection}) {
-    context.canvas.drawRect(
-        Rect.fromCenter(center: center, width: 2, height: 15),
-        Paint()
-          ..isAntiAlias = true
-          ..style = PaintingStyle.fill
-          ..color = Colors.black);
   }
 }

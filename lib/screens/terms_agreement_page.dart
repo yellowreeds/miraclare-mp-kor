@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:goodeeps2/member_registration_page.dart';
+import 'package:goodeeps2/screens/member_registration_page.dart';
 
 class TermsAgreement extends StatefulWidget {
   const TermsAgreement({super.key});

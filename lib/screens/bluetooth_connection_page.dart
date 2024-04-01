@@ -32,13 +32,9 @@ class _BluetoothConnectionState extends State<BluetoothConnection> {
   // initialize shared preferences
   void initializePreferences() async {
     prefs = await SharedPreferences.getInstance();
-    // Call the method that relies on prefs after it's initialized
     checkPermissionsAndStartScan();
   }
 
-  // check if permission is granted
-  // if granted, start scanning for goodeeps device
-  // if not, do nothing
   void checkPermissionsAndStartScan() async {
     var status = await Permission.location.status;
     if (status.isDenied) {
@@ -123,9 +119,6 @@ class _BluetoothConnectionState extends State<BluetoothConnection> {
       },
     );
 
-    // try to connect for 10 seconds, if exceed, show error.
-    // autoConnect is set to false to connect faster.
-    // somehow if autoConnect is true, it will take longer to connect.
     device
         .connect(autoConnect: false, timeout: const Duration(seconds: 10))
         .then((_) async {

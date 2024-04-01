@@ -1,10 +1,9 @@
 import 'dart:async';
 
-import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
+import 'package:goodeeps2/services/account_edit.dart';
+import 'package:goodeeps2/widgets/dialog.dart';
 import 'package:kpostal/kpostal.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,10 +50,6 @@ class _AccountEditState extends State<AccountEdit> {
   @override
   void initState() {
     super.initState();
-    // initiate screen height and width
-    // initiate shared preferences
-    // assign user's username
-    // get user's profile information
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       MediaQueryData mediaQueryData = MediaQuery.of(context);
       if (mediaQueryData.orientation == Orientation.portrait) {
@@ -70,89 +65,27 @@ class _AccountEditState extends State<AccountEdit> {
       }
       prefs = await SharedPreferences.getInstance();
       username = await prefs.getString('custUsername') ?? "";
-      getProfileInfo(username);
+      await loadProfileInfo(username);
     });
   }
 
-  // get user's profile information from server
-  Future<void> getProfileInfo(String custUsername) async {
-    final String apiUrl =
-        'http://3.21.156.190:3000/api/customers/getProfileInfo';
+  Future<void> loadProfileInfo(String custUsername) async {
+    final userData = await AccountEditService().getProfileInfo(custUsername);
 
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'cust_username': custUsername,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        userData = jsonResponse['data'];
-        setState(() {
-          idController.text = userData['cust_username'];
-          nameController.text = userData['cust_name'];
-          countryCodeController.text = userData['cust_phone_num'].split("-")[0];
-          phoneNumberController.text = userData['cust_phone_num'].split("-")[1];
-          dobController.text = userData['cust_dob'].split("T")[0];
-          genderValue = userData['cust_gender'];
-          emailController.text = userData['cust_email'];
-          addressController.text = userData['cust_address'];
-          detailAddressController.text = userData['cust_detail_address'];
-        });
-      } else if (response.statusCode == 404) {
-        throw Exception('User not found');
-      } else {
-        throw Exception('Error fetching profile information');
-      }
-    } catch (error) {
-      print('Error: $error');
-    }
-  }
-
-  // update the user's profile in the server
-  // password encryption using BCrypt library
-  Future<void> update(BuildContext context) async {
-    try {
-      String password = "";
-      if (passwordController.text.isNotEmpty) {
-        password = BCrypt.hashpw(
-          passwordController.text,
-          BCrypt.gensalt(),
-        );
-      }
-
-      final String apiUrl = 'http://3.21.156.190:3000/api/customers/update';
-      final String fullPhoneNumber =
-          countryCodeController.text + "-" + phoneNumberController.text;
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'cust_username': idController.text,
-          'cust_password': password,
-          'cust_password_original': passwordController.text,
-          'cust_phone_num': fullPhoneNumber,
-          'cust_address': addressController.text,
-          'cust_detail_address': detailAddressController.text,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        showSuccessDialog(context, '수정되었습니다.');
-      } else if (response.statusCode == 403) {
-        showWarningDialog(context, "새 비밀번호는 이전 비밀번호와 동일할 수\n없습니다.");
-      } else if (response.statusCode == 404) {
-        showWarningDialog(context, 'Customer not found');
-        print("Error: Customer not found");
-      } else {
-        showWarningDialog(context, 'Error during registration');
-        print("Error : ${response.body}");
-      }
-    } catch (error) {
-      print('Error: $error');
-      showSuccessDialog(
-          context, 'Failed to update. Please check your network connection.');
+    if (userData != null) {
+      setState(() {
+        idController.text = userData['cust_username'];
+        nameController.text = userData['cust_name'];
+        countryCodeController.text = userData['cust_phone_num'].split("-")[0];
+        phoneNumberController.text = userData['cust_phone_num'].split("-")[1];
+        dobController.text = userData['cust_dob'].split("T")[0];
+        genderValue = userData['cust_gender'];
+        emailController.text = userData['cust_email'];
+        addressController.text = userData['cust_address'];
+        detailAddressController.text = userData['cust_detail_address'];
+      });
+    } else {
+      print('Failed to load user data');
     }
   }
 
@@ -960,9 +893,19 @@ class _AccountEditState extends State<AccountEdit> {
                             onPressed: () {
                               if (passwordController.text ==
                                   passwordRepeatController.text) {
-                                update(context);
+                                AccountEditService.update(
+                                    context,
+                                    passwordController.text,
+                                    countryCodeController.text,
+                                    phoneNumberController.text,
+                                    idController.text,
+                                    addressController.text,
+                                    detailAddressController.text,
+                                    screenWidth,
+                                    screenHeight);
                               } else {
-                                showWarningDialog(context, "비밀번호가 일치하지 않습니다.");
+                                showDialogue(context, "비밀번호가 일치하지 않습니다.",
+                                    screenWidth, screenHeight);
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -990,123 +933,6 @@ class _AccountEditState extends State<AccountEdit> {
           ),
         ],
       ),
-    );
-  }
-
-  // show sucess dialog
-  Future<void> showSuccessDialog(BuildContext context, String message) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async => false, // prevent dialog from being dismissed
-          child: AlertDialog(
-            contentPadding: EdgeInsets.zero,
-            content: Container(
-              width: screenWidth,
-              padding: EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 5),
-              color: Colors.black,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Center(
-                    child: Text(
-                      textScaleFactor: 0.8,
-                      message,
-                      style: TextStyle(
-                        fontFamily: 'Pretendart',
-                        color: Colors.white,
-                        fontSize: screenHeight * 0.02,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.05,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      FocusScope.of(context).unfocus(); // Hide the keyboard
-                      Navigator.of(context)
-                          .pop(); // Return to the previous page
-                      Navigator.of(context)
-                          .pop(); // Return to the page before the previous page
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                    ),
-                    child: Text(
-                      textScaleFactor: 0.8,
-                      '확인',
-                      style: TextStyle(
-                        fontSize: screenHeight * 0.02,
-                        fontFamily: 'Pretendart',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // show warning dialog
-  Future<void> showWarningDialog(BuildContext context, String message) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          content: Container(
-            width: screenWidth,
-            padding: EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 5),
-            color: Colors.black,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Center(
-                  child: Text(
-                    textScaleFactor: 0.8,
-                    message,
-                    style: TextStyle(
-                      fontFamily: 'Pretendart',
-                      color: Colors.white,
-                      fontSize: screenHeight * 0.02,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(
-                  height: screenHeight * 0.05,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    FocusScope.of(context).unfocus();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                  ),
-                  child: Text(
-                    textScaleFactor: 0.8,
-                    '확인',
-                    style: TextStyle(
-                      fontSize: screenHeight * 0.02,
-                      fontFamily: 'Pretendart',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
