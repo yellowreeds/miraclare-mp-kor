@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:goodeeps2/change_password_page.dart';
-import 'package:goodeeps2/find_id_page.dart';
-import 'package:goodeeps2/terms_agreement_page.dart';
+import 'package:goodeeps2/screens/find_id_page.dart';
+import 'package:goodeeps2/screens/terms_agreement_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:goodeeps2/services/login.dart';

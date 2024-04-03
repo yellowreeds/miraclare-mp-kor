@@ -16,7 +16,7 @@ import 'package:get_ip_address/get_ip_address.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hex/hex.dart';
 import 'package:goodeeps2/calibration_screen.dart';
-import 'package:goodeeps2/vibration_setting.dart';
+import 'package:goodeeps2/screens/vibration_setting.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:bluetooth_enable_fork/bluetooth_enable_fork.dart';
 import 'package:permission_handler/permission_handler.dart';

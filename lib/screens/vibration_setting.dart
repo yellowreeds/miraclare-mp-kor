@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:goodeeps2/vibration_pattern_screen.dart';
+import 'package:goodeeps2/screens/vibration_pattern_screen.dart';
 import 'dart:convert';
 import 'package:goodeeps2/utils/divider_shape.dart';
 import 'package:shared_preferences/shared_preferences.dart';
