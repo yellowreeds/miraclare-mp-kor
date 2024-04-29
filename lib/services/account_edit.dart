@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:goodeeps2/screens/account_edit_page.dart';
+import 'package:goodeeps2/pages/account_edit_page.dart';
 import 'package:goodeeps2/widgets/dialog.dart';
 
 class AccountEditService {

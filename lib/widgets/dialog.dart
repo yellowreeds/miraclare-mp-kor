@@ -21,12 +21,12 @@ Future<void> showDialogue(
             children: <Widget>[
               Center(
                 child: Text(
-                  textScaleFactor: 0.85,
+                  // textScaleFactor: 0.85,
                   message,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: screenHeight * 0.02,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -42,10 +42,10 @@ Future<void> showDialogue(
                   backgroundColor: Colors.transparent,
                 ),
                 child: Text(
-                  textScaleFactor: 0.8,
+                  // textScaleFactor: 0.8,
                   '확인',
                   style: TextStyle(
-                    fontSize: screenHeight * 0.02,
+                    fontSize: 12,
                     fontFamily: 'Pretendart',
                   ),
                 ),

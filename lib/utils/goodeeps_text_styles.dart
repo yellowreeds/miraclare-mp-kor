@@ -1,0 +1,7 @@
+class GoodeepsTextStyle {
+
+  // static textStyle
+
+
+
+}

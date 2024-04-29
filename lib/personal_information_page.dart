@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:goodeeps2/screens/login_page.dart';
+import 'package:goodeeps2/pages/auth/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
