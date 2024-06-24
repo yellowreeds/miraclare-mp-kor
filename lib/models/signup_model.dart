@@ -9,7 +9,7 @@ class SignupModel {
   final String name;
   final String phone;
   @JsonKey(name: 'birth_date')
-  final DateTime birthDate;
+  final String birthDate;
   final String gender;
   final String address;
   @JsonKey(name: 'detail_address')

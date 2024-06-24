@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../widgets/goodeeps_alert.dart';
+import '../widgets/alerts.dart';
 
 class FindingID {
   Future<String?> searchID(BuildContext context, String phoneNumber,

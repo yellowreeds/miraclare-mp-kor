@@ -9,6 +9,8 @@ class ValidityTextFieldController extends BaseController {
   late final TextEditingController textEditingController =
       TextEditingController();
   final TextFieldType type;
+  var hasFocus = false.obs;
+  final focusNode = FocusNode();
 
   ValidityTextFieldController(this.type);
 
@@ -20,13 +22,22 @@ class ValidityTextFieldController extends BaseController {
   @override
   void onInit() {
     super.onInit();
+    focusNode.addListener(() {
+      hasFocus.value = focusNode.hasFocus;
+    });
     textEditingController.addListener(handleTextChange);
   }
 
   @override
-  void onClose() {
+  void dispose() {
+    focusNode.dispose();
     textEditingController.removeListener(handleTextChange);
     textEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void onClose() {
     super.onClose();
   }
 
@@ -91,8 +102,6 @@ class ValidityTextFieldController extends BaseController {
       case TextFieldType.email:
         final isValid = isValidEmail(text);
         validationInfo.value = Tuple2(isValid, null);
-        break;
-      case TextFieldType.verificationCode:
         break;
 
       default:

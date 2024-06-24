@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:goodeeps2/pages/home/main_page.dart';
 import 'package:goodeeps2/widgets/dialog.dart';
 
-import '../widgets/goodeeps_alert.dart';
+import '../widgets/alerts.dart';
 
 class LoginServices {
   static Future<void> login(BuildContext context, String id, String password,

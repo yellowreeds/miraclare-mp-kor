@@ -18,7 +18,7 @@ import 'package:hex/hex.dart';
 import 'package:goodeeps2/calibration_screen.dart';
 import 'package:goodeeps2/pages/vibration_setting.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:bluetooth_enable_fork/bluetooth_enable_fork.dart';
+// import 'package:bluetooth_enable_fork/bluetooth_enable_fork.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -556,7 +556,7 @@ class _MainPageState extends State<MainPage> {
       }
       // automatically turn on bluetooth if turn off (Android only)
       if (!bluetoothStatus) {
-        BluetoothEnable.enableBluetooth;
+        // BluetoothEnable.enableBluetooth;
       }
       if (deviceID == "") {
         showDialog(

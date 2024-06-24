@@ -187,7 +187,7 @@ class _BruxismHistoryState extends State<BruxismHistory> {
     return SfCartesianChart(
       primaryXAxis: CategoryAxis(
         majorGridLines: MajorGridLines(width: 0),
-        minorGridLines: MinorGridLines(width: 0),
+        // majorGridLines: MinorGridLines(width: 0),
         labelStyle:
             TextStyle(fontSize: screenHeight * 0.015, color: Colors.white),
       ),

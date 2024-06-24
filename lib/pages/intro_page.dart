@@ -1,5 +1,10 @@
 // intro_page.dart
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:goodeeps2/constants.dart';
+import 'package:goodeeps2/routes.dart';
+import 'package:goodeeps2/utils/shared_preferences_helper.dart';
 import 'package:video_player/video_player.dart';
 import 'package:get/get.dart';
 import 'package:goodeeps2/pages/auth/login_page.dart';
@@ -18,16 +23,25 @@ class _IntroPageState extends State<IntroPage> {
   void initState() {
     super.initState();
     setupVideoController();
-    Future.delayed(Duration(seconds: 5), () {
-      // Get.offAll(() => LoginPage());
-      Get.offAllNamed("/login");
-    });
+
+    Future.delayed(Duration(seconds: 3), () async {});
+    checkIsLogin();
   }
 
   @override
   void dispose() {
     videoController.dispose();
     super.dispose();
+  }
+
+  Future<void> checkIsLogin() async {
+    // SharedPreferencesHelper.clearAll();
+    final isLogined = await SharedPreferencesHelper.isLogined();
+    if (isLogined) {
+      Get.offAllNamed(PageRouter.home.rawValue);
+    } else {
+      Get.offAllNamed(PageRouter.login.rawValue);
+    }
   }
 
   void setupVideoController() {

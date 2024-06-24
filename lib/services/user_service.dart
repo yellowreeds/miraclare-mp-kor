@@ -1,3 +1,5 @@
+import 'package:goodeeps2/constants.dart';
+import 'package:goodeeps2/models/user_model.dart';
 import 'package:goodeeps2/pages/auth/login_page.dart';
 import 'package:goodeeps2/services/api_request.dart';
 import 'package:goodeeps2/utils/shared_preferences_helper.dart';
@@ -5,31 +7,15 @@ import 'package:goodeeps2/utils/shared_preferences_helper.dart';
 import '../models/token_model.dart';
 
 class UserService {
-
-  static Future signup() async {
-
-
-
-
-  }
-
-  static Future login(String email,String password) async {
-
-    RequestBody body = {
-      BodyParam.email: email,
-      BodyParam.password: password
-    };
-
-    final response = await APIRequest.request<TokenModel>(
-        method: HTTPMethod.post,
-        path: APIPath.login,
-        body: body,
-        fromJsonT: (json) => TokenModel.fromJson(json as Map<String, dynamic>));
-
-    if (response.result != null) {
-      return;
+  Future<UserModel?> getMe() async {
+    final item = await APIRequest.request<UserModel>(
+        method: HTTPMethod.get,
+        path: APIPath.me,
+        headers:[HTTPHeader.authorization],
+        fromJsonT: (json) => UserModel.fromJson(json as Map<String, dynamic>));
+    if (item != null) {
+      return item;
     }
-
+    return null;
   }
-
 }

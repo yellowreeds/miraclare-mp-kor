@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:goodeeps2/constants.dart';
 import 'package:goodeeps2/controllers/base_controller.dart';
+import 'package:goodeeps2/routes.dart';
 import 'package:goodeeps2/services/auth_service.dart';
+import 'package:goodeeps2/utils/shared_preferences_helper.dart';
 import 'package:video_player/video_player.dart';
 
 class LoginController extends BaseController {
   late final VideoPlayerController videoPlayerController;
   late final TextEditingController idController;
   late final TextEditingController passwordController;
-  var id = "".obs;
-  var password = "".obs;
-  var count = 0.obs; // 관찰 가능한 상태
-  var rememberLogin = false.obs;
+
+  // var id = "".obs;
+  // var password = "".obs;
   var isLoading = false.obs;
   var ipAddress = "";
   var errorMessage = "".obs;
@@ -55,24 +56,26 @@ class LoginController extends BaseController {
   //   }
   // }
 
-  void login() async {
+  Future<void> pressedLogin() async {
     isLoading.value = true;
-    logger.i(id.value);
-    logger.i(password.value);
-    final result = await authService.login(id.value, password.value);
+    await authService.login(idController.text, passwordController.text);
+    final String accessToken = await SharedPreferencesHelper.fetchData(
+        SharedPreferencesKey.accessToken);
+    final String refreshToken = await SharedPreferencesHelper.fetchData(
+        SharedPreferencesKey.refreshToken);
     isLoading.value = false;
+    if (accessToken.isNotEmpty && refreshToken.isNotEmpty) {
+      Get.offAllNamed(PageRouter.mainNavigation.rawValue);
+    }
   }
 
   void pressedFindIdButton() {
-    Get.toNamed("/find-id");
+    Get.toNamed(PageRouter.findId.rawValue);
   }
 
   void pressedFindPasswordButton() {
-    Get.toNamed("/find-password");
-
+    Get.toNamed(PageRouter.findPassword.rawValue);
   }
-
-
 
   void tappedFindPasswordButton() {}
 

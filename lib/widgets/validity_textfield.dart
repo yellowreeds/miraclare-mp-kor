@@ -31,6 +31,37 @@ class ValidityTextField extends StatelessWidget {
     }
   }
 
+  Color labelColor(bool hasFocus) {
+    return hasFocus ? Colors.white : Colors.grey;
+  }
+
+  int? maxLength() {
+    switch (type) {
+      case TextFieldType.name:
+        return 20;
+      case TextFieldType.password:
+        return 16;
+      case TextFieldType.passwordConfirm:
+        return 16;
+      default:
+        return null;
+    }
+  }
+
+  int? minLength() {
+    switch (type) {
+      case TextFieldType.name:
+        return 2;
+      case TextFieldType.password:
+        return 10;
+      case TextFieldType.passwordConfirm:
+        return 10;
+      default:
+        return null;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -42,11 +73,13 @@ class ValidityTextField extends StatelessWidget {
           child: Obx(
             () => TextField(
               readOnly: readOnly,
+              focusNode: controller.focusNode,
               controller: controller.textEditingController,
               obscureText: (type == TextFieldType.password) ||
                   (type == TextFieldType.passwordConfirm),
               keyboardType: type.inputType,
               decoration: InputDecoration(
+                border: OutlineInputBorder(),
                 suffixIconColor:
                     iconColor(controller.validationInfo.value.item1),
                 suffixIcon: (type == TextFieldType.detailAddress) ||
@@ -57,10 +90,15 @@ class ValidityTextField extends StatelessWidget {
                         onPressed: () => controller.pressedIcon(context),
                       ),
                 labelText: type.label,
+                // labelStyle: TextStyle(
+                //   fontFamily: 'Pretendart',
+                //   color: Colors.white,
+                //   fontSize: 14,
+                // ),
                 labelStyle: TextStyle(
                   fontFamily: 'Pretendart',
-                  color: Colors.white54,
                   fontSize: 14,
+                  color: labelColor(controller.hasFocus.value),
                 ),
                 hintText: type.placeholder,
                 hintStyle: TextStyle(
@@ -75,17 +113,17 @@ class ValidityTextField extends StatelessWidget {
                   fontSize: 12,
                 ),
                 counterStyle: TextStyle(color: Colors.transparent),
-                disabledBorder: UnderlineInputBorder(
+                disabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                       color:
                           borderColor(controller.validationInfo.value.item1)),
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                      color:
-                          borderColor(controller.validationInfo.value.item1)),
-                ),
-                focusedBorder: UnderlineInputBorder(
+                // enabledBorder: OutlineInputBorder(
+                //   borderSide: BorderSide(
+                //       color:
+                //           borderColor(controller.validationInfo.value.item1)),
+                // ),
+                focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                       color:
                           borderColor(controller.validationInfo.value.item1)),

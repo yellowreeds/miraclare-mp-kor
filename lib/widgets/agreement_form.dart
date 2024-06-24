@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:goodeeps2/controllers/widgets/agreement_form_controller.dart'; // 앞서 만든
+import 'package:goodeeps2/controllers/pages/terms_agreement_controller.dart';
+import 'package:goodeeps2/controllers/widgets/agreement_form_controller.dart';
 
 class AgreementForm extends StatelessWidget {
-  final AgreementFormController controller;
+  final TermsAgreementController controller;
+  final String tag;
   final String title;
   final String content;
 
   AgreementForm({
     Key? key,
+    required this.tag,
     required this.controller,
     required this.title,
     required this.content,
   }) : super(key: key);
 
+  bool isAgreed() {
+    if (tag == "form1") {
+      return controller.isAgreedForm1.value;
+    } else {
+      return controller.isAgreedForm2.value;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -52,40 +61,37 @@ class AgreementForm extends StatelessWidget {
           children: [
             Obx(() => Radio<bool>(
                   value: true,
-                  groupValue: controller.isAgreed.value,
-                  focusColor:
-                      controller.isAgreed.value ? Colors.white : Colors.grey,
-                  activeColor:
-                      controller.isAgreed.value ? Colors.white : Colors.grey,
-                  onChanged: (value) => controller.setAgreement(value ?? false),
+                  groupValue: isAgreed(),
+                  focusColor: isAgreed() ? Colors.white : Colors.grey,
+                  activeColor: isAgreed() ? Colors.white : Colors.grey,
+                  onChanged: (value) =>
+                      controller.setAgreement(tag, value ?? false),
                 )),
             Obx(() => Text(
-              '동의',
-              style: TextStyle(
-                fontFamily: 'Pretendart',
-                fontSize: 14,
-                color: controller.isAgreed.value ? Colors.white : Colors.grey,
-              ),
-            )),
+                  '동의',
+                  style: TextStyle(
+                    fontFamily: 'Pretendart',
+                    fontSize: 14,
+                    color: isAgreed() ? Colors.white : Colors.grey,
+                  ),
+                )),
             SizedBox(width: 20),
             Obx(() => Radio<bool>(
                   value: false,
-                  groupValue: controller.isAgreed.value,
-                  focusColor:
-                      controller.isAgreed.value ? Colors.grey : Colors.white,
-                  activeColor:
-                      controller.isAgreed.value ? Colors.grey : Colors.white ,
-                  onChanged: (value) => controller.setAgreement(value ?? false)
-              ,
+                  groupValue: isAgreed(),
+                  focusColor: isAgreed() ? Colors.grey : Colors.white,
+                  activeColor: isAgreed() ? Colors.grey : Colors.white,
+                  onChanged: (value) =>
+                      controller.setAgreement(tag, value ?? false),
                 )),
             Obx(() => Text(
-              '동의하지 않음',
-              style: TextStyle(
-                fontFamily: 'Pretendart',
-                fontSize: 14,
-                color: controller.isAgreed.value ? Colors.grey : Colors.white,
-              ),
-            )),
+                  '동의하지 않음',
+                  style: TextStyle(
+                    fontFamily: 'Pretendart',
+                    fontSize: 14,
+                    color: isAgreed() ? Colors.grey : Colors.white,
+                  ),
+                )),
           ],
         ),
       ],

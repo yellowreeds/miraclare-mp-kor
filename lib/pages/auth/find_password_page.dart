@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:goodeeps2/constants.dart';
 import 'package:goodeeps2/widgets/custom_app_bar.dart';
-import 'package:goodeeps2/widgets/gradient_background.dart';
+import 'package:goodeeps2/widgets/backgrounds.dart';
 
 import '../../controllers/pages/find_password_controller.dart';
 

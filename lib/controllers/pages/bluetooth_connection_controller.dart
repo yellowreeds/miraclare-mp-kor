@@ -6,7 +6,7 @@ import 'package:goodeeps2/constants.dart';
 import 'package:goodeeps2/controllers/base_controller.dart';
 import 'package:goodeeps2/utils/bluetooth_manager.dart';
 import 'package:goodeeps2/utils/shared_preferences_helper.dart';
-import 'package:goodeeps2/widgets/goodeeps_alert.dart';
+import 'package:goodeeps2/widgets/alerts.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /*
@@ -18,6 +18,7 @@ import 'package:permission_handler/permission_handler.dart';
 class BluetoothConnectionController extends BaseController {
   late var isLoading = false.obs;
   var scannedDevices = BluetoothManager.instance.devices;
+
 
   @override
   void onInit() async {

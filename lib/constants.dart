@@ -1,6 +1,6 @@
 import 'package:logger/logger.dart';
 
-const domain = "http://localhost:8000";
+const domain = "http://192.168.0.76:8000/api/v1";
 final logger = Logger(printer: PrettyPrinter());
 final loggerNoStack = Logger(printer: PrettyPrinter(methodCount: 0));
 const countryCode = "+82";

@@ -8,10 +8,8 @@ class MainNavigationPage extends GetView<MainNavigationController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(() => SafeArea(
-            child: controller.pages[controller.currentIndex.value] ??
-                SizedBox.shrink(),
-          )),
+      body: Obx(() => controller.pages[controller.currentIndex.value] ??
+          SizedBox.shrink()),
       bottomNavigationBar: Obx(() => BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             backgroundColor: Color(0xFF231B3D),

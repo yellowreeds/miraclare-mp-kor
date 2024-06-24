@@ -1,25 +1,25 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'dart:convert';
 
-import 'package:goodeeps2/utils/bluetooth_manager.dart';
+part 'uart_command.freezed.dart'; // ensure this is correctly named
 
-enum UartCommand {
-  start("SB+" + "start" + r"\" + "n"),
-  stop("SB+" + "stop" + r"\" + "n");
+@freezed
+class UartCommand with _$UartCommand {
+  const factory UartCommand.start() = Start;
 
-  List<int> bytes() {
-    return utf8.encode(this.rawValue);
+  const factory UartCommand.stop() = Stop;
+
+  const factory UartCommand.vth(String vth) = Vth;
+
+  const UartCommand._();
+
+  String get command {
+    return when(
+      start: () => "SB+start\\n",
+      stop: () => "SB+stop\\n",
+      vth: (vth) => "SB+vth=$vth\\n",
+    );
   }
-  final String rawValue;
 
-  const UartCommand(this.rawValue);
-}
-
-class UartCommandHelper {
-
-  static Future<void> command(UartCommand uartCommand) async {
-    if (BluetoothManager.instance.characteristics.value.item2 != null) {
-      await BluetoothManager.instance.characteristics.value.item2!.write
-        (uartCommand.bytes());
-    }
-  }
+  List<int> get bytes => utf8.encode(command);
 }

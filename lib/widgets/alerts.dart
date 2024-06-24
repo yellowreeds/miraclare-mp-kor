@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:goodeeps2/constants.dart';
 
 class GoodeepsSnackBar {
   static show(String title, String content) {
@@ -8,6 +7,17 @@ class GoodeepsSnackBar {
         colorText: Colors.white,
         backgroundColor: Colors.black,
         snackPosition: SnackPosition.BOTTOM);
+  }
+
+  static showError(String content) {
+    Get.snackbar("오류", content,
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+        snackPosition: SnackPosition.TOP,
+        borderRadius: 0,
+        duration: Duration(seconds: 2)
+        // 상단 모서리만 둥글게 설정
+        );
   }
 }
 
@@ -18,7 +28,7 @@ class GoodeepsDialog {
     }
     Get.dialog(
         barrierDismissible: false,
-        Dialog.fullscreen(
+        const Dialog.fullscreen(
           backgroundColor: Colors.black26,
           child: Center(
             child: SizedBox(
@@ -27,16 +37,16 @@ class GoodeepsDialog {
         ));
   }
 
-  static void hideIndicator() {
+  static void hideIndicator({bool closeOverlays = true}) {
     if (Get.isDialogOpen ?? false) {
-      Get.back(closeOverlays: true);
+      Get.back(closeOverlays: closeOverlays);
     }
   }
 
   static showError(String content) {
     Get.dialog(
       Dialog(
-        backgroundColor: Color.fromRGBO(8, 8, 20, 1),
+        backgroundColor: const Color.fromRGBO(8, 8, 20, 1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(0, 40, 0, 20),
@@ -46,7 +56,7 @@ class GoodeepsDialog {
             children: [
               Text(content,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.white,
                   )),

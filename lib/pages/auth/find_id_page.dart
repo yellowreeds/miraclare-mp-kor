@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:goodeeps2/constants.dart';
 import 'package:goodeeps2/controllers/pages/find_id_controller.dart';
 import 'package:goodeeps2/widgets/custom_app_bar.dart';
-import 'package:goodeeps2/widgets/gradient_background.dart';
+import 'package:goodeeps2/widgets/backgrounds.dart';
 import 'package:video_player/video_player.dart';
 
 class FindIdPage extends StatelessWidget {

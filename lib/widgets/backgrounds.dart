@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:goodeeps2/utils/goodeeps_color.dart';
+import 'package:goodeeps2/utils/color_style.dart';
 
 class GradientBackground extends StatelessWidget {
   final Widget? child; // child 위젯을 저장할 필드 추가
@@ -10,7 +10,7 @@ class GradientBackground extends StatelessWidget {
     double statusBarHeight = MediaQuery.of(context).padding.top;
     return Container(
       padding: EdgeInsets.fromLTRB(16, statusBarHeight, 16, 0),
-      decoration: BoxDecoration(gradient: GoodeepsColor.backgroundGradient),
+      decoration: BoxDecoration(gradient: ColorStyle.backgroundGradient),
       child: child,
     );
   }

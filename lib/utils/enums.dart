@@ -8,9 +8,31 @@ enum TextFieldType {
   phone,
   birthDate,
   email,
-  verificationCode,
   address,
   detailAddress;
+
+  String get tag {
+    switch (this) {
+      case TextFieldType.id:
+        return "id";
+      case TextFieldType.password:
+        return "password";
+      case TextFieldType.passwordConfirm:
+        return 'passwordConfirm';
+      case TextFieldType.name:
+        return 'name';
+      case TextFieldType.phone:
+        return 'phone';
+      case TextFieldType.birthDate:
+        return "birthDate";
+      case TextFieldType.email:
+        return 'email';
+      case TextFieldType.address:
+        return "address";
+      case TextFieldType.detailAddress:
+        return "detailAddress";
+    }
+  }
 
   String get label {
     switch (this) {
@@ -28,19 +50,17 @@ enum TextFieldType {
         return "생년월일";
       case TextFieldType.email:
         return '이메일';
-      case TextFieldType.verificationCode:
-        return '인증 코드';
       case TextFieldType.address:
         return '주소';
       case TextFieldType.detailAddress:
         return '상세 주소';
-      default:
-        return '';
     }
   }
 
   String get placeholder {
     switch (this) {
+      case TextFieldType.id:
+        return '아직 정해지지 않음';
       case TextFieldType.password:
         return '10~16자, 영문 + 숫자/특수문자';
       case TextFieldType.passwordConfirm:
@@ -53,15 +73,10 @@ enum TextFieldType {
         return "생년월일";
       case TextFieldType.email:
         return 'contact@miraclare.com';
-      case TextFieldType.verificationCode:
-        return '인증 코드';
       case TextFieldType.address:
         return '주소';
       case TextFieldType.detailAddress:
         return '상세주소';
-
-      default:
-        return '';
     }
   }
 
@@ -80,8 +95,6 @@ enum TextFieldType {
       case TextFieldType.birthDate:
         return Icon(Icons.calendar_today);
       case TextFieldType.email:
-        return Icon(Icons.check);
-      case TextFieldType.verificationCode:
         return Icon(Icons.check);
       case TextFieldType.address:
         return Icon(Icons.search);
@@ -104,8 +117,6 @@ enum TextFieldType {
         return TextInputType.phone;
       case TextFieldType.email:
         return TextInputType.emailAddress;
-      case TextFieldType.verificationCode:
-        return TextInputType.number;
       case TextFieldType.address:
         return TextInputType.text;
       case TextFieldType.detailAddress:

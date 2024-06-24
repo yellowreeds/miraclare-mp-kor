@@ -5,29 +5,37 @@ enum AppBarType { title, logo }
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final bool showBackButton;
 
-  CustomAppBar({Key? key, required this.title}) : super(key: key);
+  const CustomAppBar({
+    super.key,
+    required this.title,
+    this.showBackButton = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      // forceMaterialTransparency: true,
       centerTitle: true,
       title: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
             fontFamily: 'Pretendart',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white),
         textAlign: TextAlign.center,
       ),
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back),
-        onPressed: () {
-          Get.back();
-        },
-      ),
-      iconTheme: IconThemeData(
+      leading: showBackButton
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Get.back();
+              },
+            )
+          : null,
+      iconTheme: const IconThemeData(
         color: Colors.white,
       ),
       backgroundColor: Colors.transparent,

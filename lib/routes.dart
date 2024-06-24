@@ -6,14 +6,18 @@ import 'package:goodeeps2/pages/auth/terms_agreement_page.dart';
 import 'package:goodeeps2/pages/auth/find_id_page.dart';
 import 'package:goodeeps2/pages/evaluation/evaluation_page.dart';
 import 'package:goodeeps2/pages/home/bluetooth_connection_page.dart';
+import 'package:goodeeps2/pages/home/survey_page.dart';
 import 'package:goodeeps2/pages/info/info_page.dart';
+import 'package:goodeeps2/pages/intro_page.dart';
 import 'package:goodeeps2/pages/main_navigation_page.dart';
+import 'package:goodeeps2/pages/setting/align_process_page.dart';
 import 'package:goodeeps2/pages/setting/setting_page.dart';
 
 import 'pages/auth/find_password_page.dart';
 import 'pages/home/home_page.dart';
 
 enum PageRouter {
+  intro("/intro"),
   login("/login"),
   findId("/find-id"),
   findPassword("/find-password"),
@@ -21,10 +25,12 @@ enum PageRouter {
   signup("/signup"),
   home("/home"),
   mainNavigation("/main-navigation"),
+  survey("/survey"),
   evaluation("/evaluation"),
   setting("/setting"),
   info("/info"),
-  bluetoothConnection("/bluetooth-connection");
+  bluetoothConnection("/bluetooth-connection"),
+  alignProcess("/align-process");
 
   final String rawValue;
 
@@ -33,6 +39,11 @@ enum PageRouter {
 
 class AppRoutes {
   static final routes = [
+    GetPage(
+      name: PageRouter.intro.rawValue,
+      page: () => IntroPage(),
+      binding: IntroBinding(),
+    ),
     GetPage(
       name: PageRouter.login.rawValue,
       page: () => LoginPage(),
@@ -69,6 +80,11 @@ class AppRoutes {
       binding: HomeBinding(),
     ),
     GetPage(
+      name: PageRouter.survey.rawValue,
+      page: () => SurveyPage(),
+      binding: SurveyBinding(),
+    ),
+    GetPage(
       name: PageRouter.evaluation.rawValue,
       page: () => EvaluationPage(),
       binding: EvaluationBinding(),
@@ -87,6 +103,11 @@ class AppRoutes {
       name: PageRouter.bluetoothConnection.rawValue,
       page: () => BluetoothConnectionPage(),
       binding: BluetoothConnectionBinding(),
+    ),
+    GetPage(
+      name: PageRouter.alignProcess.rawValue,
+      page: () => AlignProcessPage(),
+      binding: AlignProcessBinding(),
     ),
   ];
 }

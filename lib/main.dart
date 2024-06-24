@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
-import 'package:goodeeps2/pages/auth/login_page.dart';
-import 'package:goodeeps2/pages/intro_page.dart';
+import 'package:goodeeps2/pages/setting/camera_page.dart';
 import 'package:goodeeps2/routes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 
 void main() {
+  FlutterBluePlus.setLogLevel(LogLevel.none, color:false);
   runApp(const MyApp());
 }
 
@@ -16,9 +17,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      initialRoute: PageRouter.mainNavigation.rawValue,
-      // initialRoute: PageRouter.bleConnection.rawValue,
-      // home: HomePage(),
+      // initialRoute: PageRouter.mainNavigation.rawValue,
+      // initialRoute: PageRouter.intro.rawValue,
+      home: CameraScreen(),
       localizationsDelegates: [GlobalMaterialLocalizations.delegate],
       supportedLocales: [const Locale('en'), const Locale('kr')],
       getPages: AppRoutes.routes,
